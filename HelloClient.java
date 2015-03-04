@@ -49,7 +49,7 @@ public class HelloClient {
 	    
 	    Scanner sc = new Scanner(System.in);
 	    System.out.println("Veuillez rentrer votre nom");
-	    objback.setName(sc.nextLine());
+	    objback.setName(sc.nextLine().replaceAll(" ", ""));
 	    
 	    System.out.println("Inscription au serveur...");
 	    obj.inscription(objback); 
