@@ -18,6 +18,8 @@ public void deco(HelloCallback client) throws RemoteException{
 	public void inscription(HelloCallback client) throws RemoteException{
 		listClients.add(client);
 		System.out.println("Inscription de "+client.getName());
+		say(client.getName()+" à rejoint le chat", client);
+		client.callback("Inscription ok!");
 	}
 
     public void call(String msg, HelloCallback obj) throws RemoteException {

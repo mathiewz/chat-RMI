@@ -61,7 +61,7 @@ public class HelloClient {
 			else if (str.length()>=4 && str.substring(0, 4).equals("/mp ")){
 				int indexMessage = str.indexOf(' ', 4);
 				String name = str.substring(4, indexMessage);
-				String message = str.substring(indexMessage);
+				String message = str.substring(indexMessage+1);
 				obj.sayTo(name, message, objback);
 			}
 			else {
