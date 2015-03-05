@@ -12,16 +12,9 @@ class HelloCallbackServer extends UnicastRemoteObject implements HelloCallback {
 	}
 
 	public void callback(String msg) throws RemoteException {
-		System.out.println(msg); 
+		if(!msg.equals("ping")) System.out.println(msg); 
 	}
 
-	public String getName() throws RemoteException{
-		return username;
-	}
-
-	public void setName(String value) throws RemoteException{
-		this.username = value;
-	}
 }
 
 public class HelloClient {
@@ -49,10 +42,9 @@ public class HelloClient {
 
 			Scanner sc = new Scanner(System.in);
 			System.out.println("Veuillez rentrer votre nom");
-			objback.setName(sc.nextLine().replaceAll(" ", ""));
-
+			username= sc.nextLine();
 			System.out.println("Inscription au serveur...");
-			obj.inscription(objback); 
+			obj.inscription(username, objback); 
 
 			while(sc.hasNextLine()){
 				String str = sc.nextLine();

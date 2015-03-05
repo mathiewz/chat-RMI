@@ -2,47 +2,70 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 
 public class HelloServer extends UnicastRemoteObject implements Hello {
 
-	private ArrayList<HelloCallback> listClients;
+	private HashMap<HelloCallback, String> listClients;
 
 	public HelloServer() throws RemoteException {
 		super();
-		listClients = new ArrayList<HelloCallback>();
+		listClients = new HashMap<HelloCallback, String>();
 	}
-	
+
 	public void deco(HelloCallback client) throws RemoteException{
+		System.out.println("deconnexion de "+listClients.get(client));
 		listClients.remove(client);
-		System.out.println("deconnexion de "+client.getName());
 	}
-	
-	public void inscription(HelloCallback client) throws RemoteException{
-		listClients.add(client);
-		System.out.println("Inscription de "+client.getName());
-		say(client.getName()+" à rejoint le chat", client);
+
+	public void inscription(String name, HelloCallback client) throws RemoteException{
+		listClients.put(client, name);
+		System.out.println("Inscription de "+listClients.get(client));
+		say(listClients.get(client)+" à rejoint le chat", client);
 		client.callback("Inscription ok!");
 	}
 
 	public void list(HelloCallback obj) throws RemoteException{
-		for(HelloCallback client : listClients){
-			obj.callback(client.getName());
+		ping();
+		for(Entry<HelloCallback, String> entry : listClients.entrySet()) {
+			HelloCallback client = entry.getKey();
+			obj.callback(entry.getValue());
 		}
 	}
 
 	public void say(String msg, HelloCallback obj) throws RemoteException {
-		//System.out.println("Remote Invokation of method say(): " + msg); 
-		for(HelloCallback client : listClients){
+		ping();
+		for(Entry<HelloCallback, String> entry : listClients.entrySet()) {
+			HelloCallback client = entry.getKey();
 			if(!client.equals(obj)){
-				client.callback(obj.getName()+": "+msg); // the callback
+				client.callback(listClients.get(obj)+": "+msg); // the callback
 			}
 		}
 	}
 
 	public void sayTo(String name, String message, HelloCallback obj) throws RemoteException{
-		for(HelloCallback client : listClients){
-			if(client.getName().equals(name)){
-				client.callback("[private] "+obj.getName()+": "+message); // the callback
+		ping();
+		for(Entry<HelloCallback, String> entry : listClients.entrySet()) {
+			HelloCallback client = entry.getKey();
+			if(listClients.get(client).equals(name)){
+				client.callback("[private] "+listClients.get(obj)+": "+message); // the callback
+			}
+		}
+	}
+
+	public void ping() throws RemoteException{
+		ArrayList<HelloCallback> list = new ArrayList<HelloCallback>();
+		for(Entry<HelloCallback, String> entry : listClients.entrySet()) {
+			list.add(entry.getKey());
+		}
+		for(HelloCallback client : list){
+			try{
+				client.callback("ping");
+			}
+			catch(RemoteException e){
+				deco(client);
 			}
 		}
 	}
