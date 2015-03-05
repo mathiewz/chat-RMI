@@ -9,10 +9,12 @@ import java.util.Map.Entry;
 public class HelloServer extends UnicastRemoteObject implements Hello {
 
 	private HashMap<HelloCallback, String> listClients;
+	private ArrayList<HelloCallback> listAdmin;
 
 	public HelloServer() throws RemoteException {
 		super();
 		listClients = new HashMap<HelloCallback, String>();
+		listAdmin = new ArrayList<HelloCallback>();
 	}
 
 	public void deco(HelloCallback client) throws RemoteException{
@@ -20,11 +22,44 @@ public class HelloServer extends UnicastRemoteObject implements Hello {
 		listClients.remove(client);
 	}
 
+	public void kick(String name, HelloCallback client) throws RemoteException{
+		ping();
+		System.out.println(name);
+		HelloCallback toKick 	= null;
+		if(listAdmin.contains(client)){
+			for(Entry<HelloCallback, String> entry : listClients.entrySet()) {
+				if(name.equals(entry.getValue())){
+					toKick = entry.getKey();
+				}
+			}
+			if(toKick != null){
+				deco(toKick);
+				toKick.callback("Vous avez été ejecté du chat !");
+				try{toKick.kick();}
+				catch(RemoteException e){System.out.println("L'utilisateur "+name+" à été ejecté du chat");}
+			}else{
+				client.callback("utilisateur non trouvé");
+			}
+		} else {
+			client.callback("Vous devez être modérateur pour faire ceci");
+		}
+	}
+
 	public void inscription(String name, HelloCallback client) throws RemoteException{
 		listClients.put(client, name);
 		System.out.println("Inscription de "+listClients.get(client));
 		say(listClients.get(client)+" à rejoint le chat", client);
 		client.callback("Inscription ok!");
+	}
+	public void moderation(String mdp, HelloCallback client) throws RemoteException{
+		if(mdp.equals("admin")){
+			listAdmin.add(client);
+			System.out.println(listClients.get(client)+" est passé modérateur");
+			say(listClients.get(client)+" est passé modérateur", client);
+			client.callback("Godness mod activate");
+		} else {
+			client.callback("Mot de passe erroné");
+		}
 	}
 
 	public void list(HelloCallback obj) throws RemoteException{
@@ -37,10 +72,11 @@ public class HelloServer extends UnicastRemoteObject implements Hello {
 
 	public void say(String msg, HelloCallback obj) throws RemoteException {
 		ping();
+		String Rang= listAdmin.contains(obj)?"@":"";
 		for(Entry<HelloCallback, String> entry : listClients.entrySet()) {
 			HelloCallback client = entry.getKey();
 			if(!client.equals(obj)){
-				client.callback(listClients.get(obj)+": "+msg); // the callback
+				client.callback(Rang+listClients.get(obj)+": "+msg); // the callback
 			}
 		}
 	}

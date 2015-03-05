@@ -14,6 +14,9 @@ class HelloCallbackServer extends UnicastRemoteObject implements HelloCallback {
 	public void callback(String msg) throws RemoteException {
 		if(!msg.equals("ping")) System.out.println(msg); 
 	}
+	public void kick() throws RemoteException {
+		System.exit(0);
+	}
 
 }
 
@@ -55,12 +58,14 @@ public class HelloClient {
 					String name = str.substring(4, indexMessage);
 					String message = str.substring(indexMessage+1);
 					obj.sayTo(name, message, objback);
-				}
-				else {
+				} else if (str.length()>=6 && str.substring(0, 6).equals("/modo ")){
+					obj.moderation(str.substring(6), objback);
+				} else if (str.length()>=6 && str.substring(0, 6).equals("/kick ")){
+					obj.kick(str.substring(6), objback);
+				} else {
 					obj.say(str, objback);
 				}
 			}
-
 			System.out.println("Try to unexport the Callback object..."); 
 			UnicastRemoteObject.unexportObject(objback,true); // force
 
